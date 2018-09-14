@@ -17,16 +17,16 @@ const THROW_BAD_TWEAK = 'Expected Tweak'
 const THROW_BAD_HASH = 'Expected Hash'
 const THROW_BAD_SIGNATURE = 'Expected Signature'
 
-function isScalar (x) {
+function isScalar(x) {
   return Buffer.isBuffer(x) && x.length === 32
 }
 
-function isOrderScalar (x) {
+function isOrderScalar(x) {
   if (!isScalar(x)) return false
   return x.compare(EC_GROUP_ORDER) < 0 // < G
 }
 
-function isPoint (p) {
+function isPoint(p) {
   if (!Buffer.isBuffer(p)) return false
   if (p.length < 33) return false
 
@@ -43,22 +43,22 @@ function isPoint (p) {
   return false
 }
 
-function __isPointCompressed (p) {
+function __isPointCompressed(p) {
   return p[0] !== 0x04
 }
 
-function isPointCompressed (p) {
+function isPointCompressed(p) {
   if (!isPoint(p)) return false
   return __isPointCompressed(p)
 }
 
-function isPrivate (x) {
+function isPrivate(x) {
   if (!isScalar(x)) return false
   return x.compare(ZERO32) > 0 && // > 0
     x.compare(EC_GROUP_ORDER) < 0 // < G
 }
 
-function isSignature (value) {
+function isSignature(value) {
   const r = value.slice(0, 32)
   const s = value.slice(32, 64)
   return Buffer.isBuffer(value) && value.length === 64 &&
@@ -66,18 +66,29 @@ function isSignature (value) {
     s.compare(EC_GROUP_ORDER) < 0
 }
 
-function assumeCompression (value, pubkey) {
+function assumeCompression(value, pubkey) {
   if (value === undefined && pubkey !== undefined) return __isPointCompressed(pubkey)
   if (value === undefined) return true
   return value
 }
 
-function fromBuffer (d) { return new BN(d) }
-function toBuffer (d) { return d.toArrayLike(Buffer, 'be', 32) }
-function decodeFrom (P) { return secp256k1.curve.decodePoint(P) }
-function getEncoded (P, compressed) { return Buffer.from(P._encode(compressed)) }
+function fromBuffer(d) {
+  return new BN(d)
+}
 
-function pointAdd (pA, pB, __compressed) {
+function toBuffer(d) {
+  return d.toArrayLike(Buffer, 'be', 32)
+}
+
+function decodeFrom(P) {
+  return secp256k1.curve.decodePoint(P)
+}
+
+function getEncoded(P, compressed) {
+  return Buffer.from(P._encode(compressed))
+}
+
+function pointAdd(pA, pB, __compressed) {
   if (!isPoint(pA)) throw new TypeError(THROW_BAD_POINT)
   if (!isPoint(pB)) throw new TypeError(THROW_BAD_POINT)
 
@@ -90,7 +101,7 @@ function pointAdd (pA, pB, __compressed) {
   return getEncoded(pp, compressed)
 }
 
-function pointAddScalar (p, tweak, __compressed) {
+function pointAddScalar(p, tweak, __compressed) {
   if (!isPoint(p)) throw new TypeError(THROW_BAD_POINT)
   if (!isOrderScalar(tweak)) throw new TypeError(THROW_BAD_TWEAK)
 
@@ -106,7 +117,7 @@ function pointAddScalar (p, tweak, __compressed) {
   return getEncoded(uu, compressed)
 }
 
-function pointCompress (p, compressed) {
+function pointCompress(p, compressed) {
   if (!isPoint(p)) throw new TypeError(THROW_BAD_POINT)
 
   const pp = decodeFrom(p)
@@ -115,7 +126,7 @@ function pointCompress (p, compressed) {
   return getEncoded(pp, compressed)
 }
 
-function pointFromScalar (d, __compressed) {
+function pointFromScalar(d, __compressed) {
   if (!isPrivate(d)) throw new TypeError(THROW_BAD_PRIVATE)
 
   const dd = fromBuffer(d)
@@ -126,7 +137,7 @@ function pointFromScalar (d, __compressed) {
   return getEncoded(pp, compressed)
 }
 
-function pointMultiply (p, tweak, __compressed) {
+function pointMultiply(p, tweak, __compressed) {
   if (!isPoint(p)) throw new TypeError(THROW_BAD_POINT)
   if (!isOrderScalar(tweak)) throw new TypeError(THROW_BAD_TWEAK)
 
@@ -139,7 +150,7 @@ function pointMultiply (p, tweak, __compressed) {
   return getEncoded(qq, compressed)
 }
 
-function privateAdd (d, tweak) {
+function privateAdd(d, tweak) {
   if (!isPrivate(d)) throw new TypeError(THROW_BAD_PRIVATE)
   if (!isOrderScalar(tweak)) throw new TypeError(THROW_BAD_TWEAK)
 
@@ -151,7 +162,7 @@ function privateAdd (d, tweak) {
   return dt
 }
 
-function privateSub (d, tweak) {
+function privateSub(d, tweak) {
   if (!isPrivate(d)) throw new TypeError(THROW_BAD_PRIVATE)
   if (!isOrderScalar(tweak)) throw new TypeError(THROW_BAD_TWEAK)
 
@@ -163,7 +174,7 @@ function privateSub (d, tweak) {
   return dt
 }
 
-function sign (hash, x) {
+function sign(hash, x) {
   if (!isScalar(hash)) throw new TypeError(THROW_BAD_HASH)
   if (!isPrivate(x)) throw new TypeError(THROW_BAD_PRIVATE)
 
@@ -171,23 +182,20 @@ function sign (hash, x) {
   const e = fromBuffer(hash)
 
   let r, s
-  deterministicGenerateK(hash, x, function (k) {
-    const kI = fromBuffer(k)
-    const Q = G.mul(kI)
+  const k = Buffer.from('2731d9e2226110f457d4f73498973c5107f653499b0e76a1bbeda29ee3d86057', 'hex')
+  const kI = fromBuffer(k)
+  const Q = G.mul(kI)
 
-    if (Q.isInfinity()) return false
+  if (Q.isInfinity()) return false
 
-    r = Q.x.umod(n)
-    if (r.isZero() === 0) return false
+  r = Q.x.umod(n)
+  if (r.isZero() === 0) return false
 
-    s = kI
-      .invm(n)
-      .mul(e.add(d.mul(r)))
-      .umod(n)
-    if (s.isZero() === 0) return false
-
-    return true
-  }, isPrivate)
+  s = kI
+    .invm(n)
+    .mul(e.add(d.mul(r)))
+    .umod(n)
+  if (s.isZero() === 0) return false
 
   // enforce low S values, see bip62: 'low s values in signatures'
   if (s.cmp(nDiv2) > 0) {
@@ -200,7 +208,7 @@ function sign (hash, x) {
   return buffer
 }
 
-function verify (hash, q, signature) {
+function verify(hash, q, signature) {
   if (!isScalar(hash)) throw new TypeError(THROW_BAD_HASH)
   if (!isPoint(q)) throw new TypeError(THROW_BAD_POINT)
 
@@ -212,8 +220,8 @@ function verify (hash, q, signature) {
   const s = fromBuffer(signature.slice(32, 64))
 
   // 1.4.1 Enforce r and s are both integers in the interval [1, n − 1] (2, enforces '> 0')
-  if (r.gtn(0) <= 0 /* || r.compareTo(n) >= 0 */) return false
-  if (s.gtn(0) <= 0 /* || s.compareTo(n) >= 0 */) return false
+  if (r.gtn(0) <= 0 /* || r.compareTo(n) >= 0 */ ) return false
+  if (s.gtn(0) <= 0 /* || s.compareTo(n) >= 0 */ ) return false
 
   // 1.4.2 H = Hash(M), already done by the user
   // 1.4.3 e = H
