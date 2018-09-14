@@ -174,7 +174,7 @@ function privateSub(d, tweak) {
   return dt
 }
 
-function sign(hash, x) {
+function sign2(hash, x) {
   if (!isScalar(hash)) throw new TypeError(THROW_BAD_HASH)
   if (!isPrivate(x)) throw new TypeError(THROW_BAD_PRIVATE)
 
@@ -202,9 +202,20 @@ function sign(hash, x) {
     s = n.sub(s)
   }
 
+  return {
+    r: toBuffer(r),
+    s: toBuffer(s)
+  };
+}
+
+function sign(hash, x) {
+  const {
+    r,
+    s
+  } = sign(hash, x);
   const buffer = Buffer.allocUnsafe(64)
-  toBuffer(r).copy(buffer, 0)
-  toBuffer(s).copy(buffer, 32)
+  r.copy(buffer, 0)
+  s.copy(buffer, 32)
   return buffer
 }
 
@@ -264,5 +275,6 @@ module.exports = {
   privateAdd,
   privateSub,
   sign,
+  sign2,
   verify
 }
