@@ -1,26 +1,12 @@
 # tiny-secp256k1
-[![Build Status](https://travis-ci.org/bitcoinjs/tiny-secp256k1.png?branch=master)](https://travis-ci.org/bitcoinjs/tiny-secp256k1)
+**DO NOT USE FOR REAL WALLET, OR YOUR PRIVATE KEY WILL LEAK**    
+This is modified to use "hardcoded K" value to artificially make "bad signature".    
+So your private key will leak by using it for your wallet.    
+
 [![NPM](https://img.shields.io/npm/v/tiny-secp256k1.svg)](https://www.npmjs.org/package/tiny-secp256k1)
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 This library is under development,  and,  like the [secp256k1](https://github.com/bitcoin-core/secp256k1) C library it depends on,  this is a research effort to determine an optimal API for end-users of the bitcoinjs ecosystem.
-
-## Installation
-
-### npm
-
-``` bash
-npm install tiny-secp256k1
-```
-
-### yarn
-
-```bash
-yarn add tiny-secp256k1
-```
-
-If you are having problems,  please read the guide at [secp256k1-node](https://github.com/cryptocoinjs/secp256k1-node#installation),  as the build instructions should be exactly the same (and this module is a direct derivation).
-
 
 ## Documentation
 
